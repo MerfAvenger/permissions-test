@@ -1,75 +1,23 @@
-# React + TypeScript + Vite
+# Permissions Test App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This app was put together to demonstrate the different behaviours between the browser permissions APIs.
 
-Currently, two official plugins are available:
+In particular, Firefox's behaviour for temporary permissions grants differs from Chrome in a way I consider inconsistent and unexpected.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Chrome Behaviour
 
-## React Compiler
+- Initial permissions state is PROMPT.
+- When the button is clicked, permissions are requested and temporarily granted for a camera, the permissions state becomes GRANTED.
+- When the page is closed and opened in a new tab, the permissions state returns to PROMPT.
+- When the button is clicked, permissions are requested and temporarily granted for a camera, the permissions state becomes GRANTED.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+**This reflects what I would expect, since the user is prompted again in a new tab!**
 
-Note: This will impact Vite dev & build performances.
+## Firefox Behaviour
 
-## Expanding the ESLint configuration
+- Initial permissions state is PROMPT.
+- When the button is clicked, permissions are requested and temporarily granted for a camera, the permissions state becomes GRANTED.
+- When the page is closed and opened in a new tab, the permissions state _still reports GRANTED_.
+- When the button is clicked, permissions are requested and temporarily granted for a camera, the permissions state becomes GRANTED.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**The user is prompted for permissions, so I would expect the permissions API to reflect this!**
