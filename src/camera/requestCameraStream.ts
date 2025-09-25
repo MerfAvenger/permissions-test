@@ -1,6 +1,6 @@
 export async function requestCameraStream() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: true,
+    video: true,
   });
 
   const { deviceId } = stream.getTracks()[0].getSettings();
