@@ -1,25 +1,37 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { detectPermissions } from "./camera/detectPermissions";
 import { requestCameraStream } from "./camera/requestCameraStream";
 import { UAParser } from "ua-parser-js";
 
-const getCameraLabel = (deviceInfo?: MediaDeviceInfo) => {
-  return deviceInfo?.label || `Unknown Camera`;
+const getCameraFields = (deviceInfo?: MediaDeviceInfo) => {
+  console.log(deviceInfo);
+  return {
+    label: deviceInfo?.label || `Unknown Camera`,
+    id: deviceInfo?.deviceId || "",
+  };
 };
 
 function App() {
   const [permissionsState, setPermissionsState] = useState<string | null>(null);
-  const [selectedCamera, setSelectedCamera] = useState<string>("None");
+  const [selectedCameraLabel, setSelectedCameraLabel] = useState<string>("");
+  const [selectedCameraId, setSelectedCameraId] = useState<string>(
+    localStorage.getItem("selectedCameraId") || ""
+  );
   const [browser, setBrowser] = useState<string>("Unknown Browser");
 
   useMemo(() => {
-    detectPermissions().then(setPermissionsState);
+    detectPermissions(selectedCameraId).then(setPermissionsState);
 
     const parser = new UAParser();
     const result = parser.getResult();
     setBrowser(`${result.browser.name} ${result.browser.version}`);
   }, []);
+
+  useEffect(() => {
+    console.log("Storing selected camera ID", selectedCameraId);
+    localStorage.setItem("selectedCameraId", selectedCameraId || "");
+  }, [selectedCameraId]);
 
   return (
     <>
@@ -28,10 +40,13 @@ function App() {
       <div className="card">
         <button
           onClick={() =>
-            requestCameraStream()
-              .then(getCameraLabel)
-              .then(setSelectedCamera)
-              .then(detectPermissions)
+            requestCameraStream(selectedCameraId)
+              .then(getCameraFields)
+              .then(({ label, id }) => {
+                setSelectedCameraLabel(label);
+                setSelectedCameraId(id);
+              })
+              .then(() => detectPermissions(selectedCameraId))
               .then(setPermissionsState)
           }
         >
@@ -39,7 +54,7 @@ function App() {
         </button>
       </div>
       <p>Permissions state: {permissionsState ?? "unknown"}</p>
-      <p>Selected camera: {selectedCamera}</p>
+      <p>Selected camera: {selectedCameraLabel}</p>
     </>
   );
 }
